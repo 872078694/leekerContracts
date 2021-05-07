@@ -11,8 +11,11 @@ contract LeekerToken {
   uint256 public totalSupply;
 
   event Transfer(address indexed _from, address indexed _to, uint256 _value);
-  mapping(address => uint256) public balanceOf;
+  event Approve(address indexed _owner, address indexed _spender, uint256 _value);
 
+  mapping(address => uint256) public balanceOf;
+  mapping(address => mapping(address => uint256)) public allowance;
+  
 
   constructor(uint256 _initialSupply) public {
    balanceOf[msg.sender] = _initialSupply;
@@ -35,6 +38,31 @@ contract LeekerToken {
     return true;
 
   }
+  // approve
+  function approve(address _spender, uint256 _value) public returns(bool success) {
+    // Allowance
+    allowance[msg.sender][_spender] = _value;
+
+    emit Approve(msg.sender, _spender, _value);
+    // Approvment event
+    return true;
+  }
+
+  // Delegated transfer
+    function transferFrom(address _from, address _to, uint256 _value)public returns(bool success) {
+      // Require _from has enough tokens
+      require(_value <= balanceOf[_from]);
+      require(_value <= allowance[_from][msg.sender]);
+
+      // change the balance 
+      balanceOf[_from] -= _value;
+      balanceOf[_to] += _value;
+      // update the allowance
+      allowance[_from][msg.sender] -= _value;
+      // Transfer event
+      emit Transfer(_from, _to, _value);
+      return true;
+    }
 
 
 }
